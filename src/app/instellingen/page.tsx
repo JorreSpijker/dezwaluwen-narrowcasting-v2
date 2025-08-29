@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase, Settings } from '@/lib/supabase'
-import { CogIcon, CheckIcon, ExclamationTriangleIcon, PhotoIcon } from '@heroicons/react/24/outline'
+import { CogIcon, CheckIcon, ExclamationTriangleIcon, PhotoIcon, EyeIcon, EyeSlashIcon, KeyIcon } from '@heroicons/react/24/outline'
 import { useSettings } from '@/hooks/useSettings'
 import Image from 'next/image'
 import ProtectedRoute from '@/components/ProtectedRoute'
@@ -15,6 +15,8 @@ function InstellingenPageContent() {
   const [themeColor, setThemeColor] = useState('#FF6600')
   const [slideshowEnabled, setSlideshowEnabled] = useState(false)
   const [slideDuration, setSlideDuration] = useState(10)
+  const [adminPassword, setAdminPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
@@ -30,6 +32,7 @@ function InstellingenPageContent() {
       setThemeColor(currentSettings.theme_color || '#FF6600')
       setSlideshowEnabled(currentSettings.slideshow_enabled || false)
       setSlideDuration(currentSettings.slide_duration || 10)
+      setAdminPassword(currentSettings.admin_password || 'admin123')
       setLogoPreview(currentSettings.logo_url || null)
     } else if (!loading && currentClubCode) {
       setClubCode(currentClubCode)
@@ -177,6 +180,7 @@ function InstellingenPageContent() {
             theme_color: themeColor,
             slideshow_enabled: slideshowEnabled,
             slide_duration: slideDuration,
+            admin_password: adminPassword,
             updated_at: new Date().toISOString()
           })
           .eq('id', settings.id)
@@ -193,6 +197,7 @@ function InstellingenPageContent() {
             theme_color: themeColor,
             slideshow_enabled: slideshowEnabled,
             slide_duration: slideDuration,
+            admin_password: adminPassword,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           }])
@@ -456,6 +461,71 @@ function InstellingenPageContent() {
               </p>
             </div>
 
+            {/* Admin Password Settings */}
+            <div className="pt-8 border-t border-gray-200">
+              <div className="flex items-center mb-6">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-red-400 to-pink-500 flex items-center justify-center mr-4">
+                  <KeyIcon className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">
+                    Beveiliging
+                  </h3>
+                  <p className="text-gray-600">Beheer het admin wachtwoord voor toegang tot instellingen</p>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <label htmlFor="admin-password" className="block text-sm font-medium text-gray-700">
+                    Admin Wachtwoord
+                  </label>
+                  <div className="mt-1 relative">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id="admin-password"
+                      value={adminPassword}
+                      onChange={(e) => setAdminPassword(e.target.value)}
+                      className="shadow-sm focus:ring-red-500 focus:border-red-500 block w-full text-sm border-gray-300 rounded-lg px-4 py-3 pr-10 transition-colors duration-200"
+                      placeholder="Voer een veilig wachtwoord in"
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeSlashIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      ) : (
+                        <EyeIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      )}
+                    </button>
+                  </div>
+                  <p className="mt-2 text-sm text-gray-500">
+                    Dit wachtwoord wordt gebruikt om toegang te krijgen tot deze instellingen pagina.
+                  </p>
+                  
+                  <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-amber-400" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <h4 className="text-sm font-medium text-amber-800">
+                          🔐 Beveiligingstip
+                        </h4>
+                        <div className="mt-1 text-sm text-amber-700">
+                          <p>Gebruik een sterk wachtwoord met minimaal 8 tekens, inclusief letters, cijfers en speciale tekens.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Slideshow Settings */}
             <div className="pt-8 border-t border-gray-200">
               <div className="flex items-center mb-6">
@@ -552,7 +622,7 @@ function InstellingenPageContent() {
               <button
                 type="button"
                 onClick={handleSave}
-                disabled={saving || uploading || !clubCode.trim() || !clubName.trim() || !themeColor.trim()}
+                disabled={saving || uploading || !clubCode.trim() || !clubName.trim() || !themeColor.trim() || !adminPassword.trim()}
                 className="teamnl-button-primary disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none inline-flex items-center"
               >
                 <CogIcon className="h-5 w-5 mr-2" />

@@ -14,6 +14,7 @@ export interface Settings {
   theme_color: string
   slideshow_enabled?: boolean
   slide_duration?: number
+  admin_password: string
   created_at: string
   updated_at: string
 }

@@ -17,7 +17,7 @@ export default function LoginForm() {
     setIsLoading(true)
 
     try {
-      const success = login(password)
+      const success = await login(password)
       if (!success) {
         setError('Onjuist wachtwoord. Probeer het opnieuw.')
         setPassword('')

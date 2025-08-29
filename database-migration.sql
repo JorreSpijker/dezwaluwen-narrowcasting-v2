@@ -80,11 +80,23 @@ BEGIN
     END IF;
 END $$;
 
--- 8. Verify the table structure
+-- 8. Add admin_password column for database-stored admin password
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name = 'settings' AND column_name = 'admin_password') THEN
+        ALTER TABLE settings ADD COLUMN admin_password TEXT DEFAULT 'admin123';
+        RAISE NOTICE 'Column admin_password added successfully';
+    ELSE
+        RAISE NOTICE 'Column admin_password already exists, skipping';
+    END IF;
+END $$;
+
+-- 9. Verify the table structure
 SELECT column_name, data_type, is_nullable 
 FROM information_schema.columns 
 WHERE table_name = 'settings' 
 ORDER BY ordinal_position;
 
--- 9. Check current settings data
+-- 10. Check current settings data
 SELECT * FROM settings;

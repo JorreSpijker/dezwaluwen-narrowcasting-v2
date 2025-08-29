@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useSettings } from '@/hooks/useSettings'
 
-const SLIDE_ROUTES = ['/standen', '/programma', '/nieuws']
+const SLIDE_ROUTES = ['/standen', '/wedstrijden', '/nieuws']
 
 export default function Slideshow() {
   const router = useRouter()

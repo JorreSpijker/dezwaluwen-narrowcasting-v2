@@ -1,10 +1,11 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
 
 interface AuthContextType {
   isAuthenticated: boolean
-  login: (password: string) => boolean
+  login: (password: string) => Promise<boolean>
   logout: () => void
   loading: boolean
 }
@@ -56,20 +57,46 @@ export function AuthProvider({ children }: AuthProviderProps) {
     checkAuth()
   }, [])
 
-  const login = (password: string): boolean => {
-    // In production, you would set this via environment variable
-    const correctPassword = process.env.NEXT_PUBLIC_SETTINGS_PASSWORD || 'admin123'
-    
-    if (password === correctPassword) {
-      const authData = {
-        authenticated: true,
-        timestamp: Date.now()
+  const login = async (password: string): Promise<boolean> => {
+    try {
+      // Get the admin password from the database
+      const { data: settings, error } = await supabase
+        .from('settings')
+        .select('admin_password')
+        .single()
+
+      if (error) {
+        console.error('Error fetching admin password:', error)
+        // Fallback to default password if database error
+        const defaultPassword = 'admin123'
+        if (password === defaultPassword) {
+          const authData = {
+            authenticated: true,
+            timestamp: Date.now()
+          }
+          sessionStorage.setItem('narrowcasting_auth', JSON.stringify(authData))
+          setIsAuthenticated(true)
+          return true
+        }
+        return false
       }
-      sessionStorage.setItem('narrowcasting_auth', JSON.stringify(authData))
-      setIsAuthenticated(true)
-      return true
+
+      const correctPassword = settings?.admin_password || 'admin123'
+      
+      if (password === correctPassword) {
+        const authData = {
+          authenticated: true,
+          timestamp: Date.now()
+        }
+        sessionStorage.setItem('narrowcasting_auth', JSON.stringify(authData))
+        setIsAuthenticated(true)
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error('Login error:', error)
+      return false
     }
-    return false
   }
 
   const logout = () => {
