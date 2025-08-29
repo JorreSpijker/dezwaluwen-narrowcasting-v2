@@ -5,8 +5,9 @@ import { supabase, Settings } from '@/lib/supabase'
 import { CogIcon, CheckIcon, ExclamationTriangleIcon, PhotoIcon } from '@heroicons/react/24/outline'
 import { useSettings } from '@/hooks/useSettings'
 import Image from 'next/image'
+import ProtectedRoute from '@/components/ProtectedRoute'
 
-export default function InstellingenPage() {
+function InstellingenPageContent() {
   const { settings: currentSettings, clubCode: currentClubCode, clubName: currentClubName, logoUrl: currentLogoUrl, themeColor: currentThemeColor, loading, refreshSettings } = useSettings()
   const [settings, setSettings] = useState<Settings | null>(null)
   const [clubCode, setClubCode] = useState('')
@@ -37,6 +38,20 @@ export default function InstellingenPage() {
       setLogoPreview(currentLogoUrl)
     }
   }, [currentSettings, currentClubCode, currentClubName, currentThemeColor, currentLogoUrl, loading])
+
+  // Initialize with cached theme color to prevent flash in the form
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !currentSettings && loading) {
+      try {
+        const cachedThemeColor = localStorage.getItem('narrowcasting_theme_color')
+        if (cachedThemeColor) {
+          setThemeColor(cachedThemeColor)
+        }
+      } catch (error) {
+        // Silent fail
+      }
+    }
+  }, [currentSettings, loading])
 
   const revalidateCache = async (oldClubCode?: string) => {
     try {
@@ -591,5 +606,13 @@ export default function InstellingenPage() {
       )}
 
     </div>
+  )
+}
+
+export default function InstellingenPage() {
+  return (
+    <ProtectedRoute>
+      <InstellingenPageContent />
+    </ProtectedRoute>
   )
 }

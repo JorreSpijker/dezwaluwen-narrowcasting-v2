@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { fetchPools, fetchStanding, TeamWithPools, PoolStanding } from '@/lib/korfbal-api'
 import { useSettings } from '@/hooks/useSettings'
+import { useTheme } from '@/hooks/useTheme'
 
 export default function StandenPage() {
   const [teamsWithPools, setTeamsWithPools] = useState<TeamWithPools[]>([])
@@ -10,7 +11,8 @@ export default function StandenPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
-  const { clubCode, clubName, themeColor, loading: settingsLoading } = useSettings()
+  const { clubCode, clubName, loading: settingsLoading } = useSettings()
+  const { themeColor } = useTheme() // Use cached theme color for instant updates
 
   // Generate lighter version of theme color for backgrounds
   const getLightThemeColor = () => {

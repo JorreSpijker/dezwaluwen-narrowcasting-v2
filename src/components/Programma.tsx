@@ -2,13 +2,15 @@
 
 import { type Match } from '@/lib/korfbal-api'
 import { useSettings } from '@/hooks/useSettings'
+import { useTheme } from '@/hooks/useTheme'
 
 interface ProgrammaProps {
   matches: Match[]
 }
 
 export default function Programma({ matches }: ProgrammaProps) {
-  const { clubCode, clubName, themeColor } = useSettings()
+  const { clubCode, clubName } = useSettings()
+  const { themeColor } = useTheme() // Use cached theme color for instant updates
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('nl-NL', {

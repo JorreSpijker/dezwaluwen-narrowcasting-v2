@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { fetchWedstrijden, ProgramResponse, type Match } from '@/lib/korfbal-api'
 import { useSettings } from '@/hooks/useSettings'
+import { useTheme } from '@/hooks/useTheme'
 import Programma from '@/components/Programma'
 import Resultaten from '@/components/Resultaten'
 
@@ -11,7 +12,8 @@ export default function WedstrijdenPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
-  const { clubCode, clubName, themeColor, loading: settingsLoading } = useSettings()
+  const { clubCode, clubName, loading: settingsLoading } = useSettings()
+  const { themeColor } = useTheme() // Use cached theme color for instant updates
 
   useEffect(() => {
     const loadWedstrijden = async () => {

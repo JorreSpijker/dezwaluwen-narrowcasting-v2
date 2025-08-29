@@ -6,9 +6,12 @@ import {
   ChartBarIcon, 
   CalendarIcon, 
   NewspaperIcon, 
-  CogIcon 
+  CogIcon,
+  ArrowRightOnRectangleIcon 
 } from '@heroicons/react/24/outline'
 import { useSettings } from '@/hooks/useSettings'
+import { useTheme } from '@/hooks/useTheme'
+import { useAuth } from '@/contexts/AuthContext'
 import Image from 'next/image'
 
 const navigation = [
@@ -21,7 +24,9 @@ const settingsItem = { name: 'Instellingen', href: '/instellingen', icon: CogIco
 
 export default function Navigation() {
   const pathname = usePathname()
-  const { logoUrl, clubName, themeColor } = useSettings()
+  const { logoUrl, clubName } = useSettings()
+  const { themeColor } = useTheme() // Use cached theme color for instant updates
+  const { isAuthenticated, logout } = useAuth()
 
   // Generate lighter version of theme color for hover states
   const getLightThemeColor = () => {
@@ -117,7 +122,7 @@ export default function Navigation() {
             </div>
           </div>
           
-          <div className="flex items-center">
+          <div className="flex items-center space-x-2">
             {/* Settings button - desktop */}
             <div className="hidden md:block">
               {(() => {
@@ -155,6 +160,19 @@ export default function Navigation() {
                 )
               })()}
             </div>
+
+            {/* Logout button - only show when authenticated */}
+            {isAuthenticated && (
+              <div className="hidden md:block">
+                <button
+                  onClick={logout}
+                  className="flex items-center px-3 py-2 rounded-lg text-sm font-medium text-gray-600 transition-all duration-200 hover:bg-red-50 hover:text-red-600"
+                  title="Uitloggen"
+                >
+                  <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                </button>
+              </div>
+            )}
 
             {/* Mobile menu button */}
             <div className="md:hidden ml-4">

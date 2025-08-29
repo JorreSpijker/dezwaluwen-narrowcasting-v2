@@ -4,6 +4,8 @@ import "./globals.css";
 import Navigation from "@/components/navigation";
 import ClientLayout from "@/components/ClientLayout";
 import Slideshow from "@/components/Slideshow";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { themeInitScript } from "@/lib/theme-init";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,16 +29,25 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: themeInitScript,
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 min-h-screen`}
       >
-        <ClientLayout>
-          <Navigation />
-          <Slideshow />
-          <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-            {children}
-          </main>
-        </ClientLayout>
+        <AuthProvider>
+          <ClientLayout>
+            <Navigation />
+            <Slideshow />
+            <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+              {children}
+            </main>
+          </ClientLayout>
+        </AuthProvider>
       </body>
     </html>
   );

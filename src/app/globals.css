@@ -4,7 +4,7 @@
   --background: #fff;
   --foreground: #1a1a1a;
   
-  /* TeamNL Color Scheme */
+  /* TeamNL Color Scheme - Will be dynamically updated by theme system */
   --teamnl-orange: #FF6600;
   --teamnl-orange-light: #FF8533;
   --teamnl-orange-dark: #E55A00;
@@ -69,6 +69,22 @@ body {
 .teamnl-button-primary:hover {
   background: var(--teamnl-orange-dark);
   transform: translateY(-1px);
+}
+
+/* Fade in animation for loading state */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out;
 }
 
 .teamnl-button-secondary {
