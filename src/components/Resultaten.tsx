@@ -50,46 +50,36 @@ export default function Resultaten({ matches }: ResultatenProps) {
   }
 
   const getMatchResult = (match: Match) => {
-    // Check if match has been played (has score data)
-    if (match.status?.game === 'finished' || match.status?.status === 'finished') {
+    // Check if match has been played and has score data
+    if ((match.status?.game === 'uitgespeeld' || match.status?.status === 'FINAL') && match.stats) {
       const matchType = getMatchType(match)
       if (matchType === 'neutral') return null
       
-      // For demonstration, we'll assume score data might be in a scores field
-      // In real API this might be different - we'll show placeholder for now
+      const homeScore = match.stats.home.score
+      const awayScore = match.stats.away.score
+      
+      // Determine result from club's perspective
+      let result = 'gelijk'
+      if (matchType === 'home') {
+        // Club is home team
+        if (homeScore > awayScore) result = 'winst'
+        else if (homeScore < awayScore) result = 'verlies'
+      } else {
+        // Club is away team  
+        if (awayScore > homeScore) result = 'winst'
+        else if (awayScore < homeScore) result = 'verlies'
+      }
+      
       return {
-        homeScore: '0', // This would come from actual API data
-        awayScore: '0', // This would come from actual API data
-        result: 'gelijk' // 'winst', 'verlies', or 'gelijk'
+        homeScore: homeScore.toString(),
+        awayScore: awayScore.toString(),
+        result
       }
     }
+    
     return null
   }
 
-  const getResultBadge = (result: string) => {
-    switch (result) {
-      case 'winst':
-        return (
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-            ✓ Winst
-          </span>
-        )
-      case 'verlies':
-        return (
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-            ✗ Verlies
-          </span>
-        )
-      case 'gelijk':
-        return (
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-            = Gelijk
-          </span>
-        )
-      default:
-        return null
-    }
-  }
 
   if (matches.length === 0) {
     return (
@@ -111,8 +101,11 @@ export default function Resultaten({ matches }: ResultatenProps) {
       >
         <div className="flex justify-between items-center text-white">
           <h2 className="text-base font-bold">
-          Resultaten
+            {clubName} - Resultaten
           </h2>
+          <span className="text-xs text-gray-900 font-medium bg-white bg-opacity-20 px-2 py-1 rounded-full">
+            Afgelopen week
+          </span>
         </div>
       </div>
       <div className="overflow-x-auto">
@@ -123,16 +116,19 @@ export default function Resultaten({ matches }: ResultatenProps) {
                 Datum
               </th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
+                Tijd
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
                 Thuis
               </th>
               <th className="px-4 py-3 text-center text-sm font-semibold text-gray-600 uppercase tracking-wider">
-                Uitslag
+                vs
               </th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
                 Uit
               </th>
-              <th className="px-4 py-3 text-center text-sm font-semibold text-gray-600 uppercase tracking-wider">
-                Resultaat
+              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
+                &nbsp;
               </th>
             </tr>
           </thead>
@@ -147,18 +143,21 @@ export default function Resultaten({ matches }: ResultatenProps) {
                 <tr 
                   key={match.ref_id}
                   className={`${
-                    matchType === 'home' 
+                    result?.result === 'winst' 
+                      ? 'bg-green-50' 
+                      : matchType === 'home' 
                       ? 'bg-blue-50' 
-                      : matchType === 'away'
-                      ? 'bg-gray-50'
                       : 'bg-white'
                   }`}
                 >
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 w-3">
                     {formatDate(match.date)}
                   </td>
+                  <td className="px-4 py-3 whitespace-nowrap text-sm font-regular text-gray-900">
+                    {formatTime(match.date)}
+                  </td>
                   <td className="px-4 py-3 whitespace-nowrap">
-                    <div className={`text-sm font-medium ${
+                    <div className={`text-sm font-regular ${
                       isHomeTeam 
                         ? 'text-gray-900 font-bold' 
                         : 'text-gray-900'
@@ -172,25 +171,20 @@ export default function Resultaten({ matches }: ResultatenProps) {
                         {result.homeScore} - {result.awayScore}
                       </span>
                     ) : (
-                      <span className="text-gray-400 font-medium">-</span>
+                      <span className="text-gray-400 font-regular">-</span>
                     )}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
-                    <div className={`text-sm font-medium ${
+                    <div className={`text-sm font-regular ${
                       isAwayTeam 
                         ? 'text-gray-900 font-bold' 
                         : 'text-gray-900'
                     }`}>
                       {match.teams.away.name}
                     </div>
-                    {matchType === 'away' && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 mt-1">
-                        🚗 Uit
-                      </span>
-                    )}
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-center">
-                    {result && matchType !== 'neutral' && getResultBadge(result.result)}
+                  <td className="px-4 py-3 whitespace-nowrap text-sm font-regular text-gray-900">
+                    &nbsp;
                   </td>
                 </tr>
               )

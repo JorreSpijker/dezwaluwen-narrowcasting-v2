@@ -64,7 +64,7 @@ function InstellingenPageContent() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          tags: ['pools', 'program', 'standings'],
+          tags: ['pools', 'wedstrijden', 'resultaten', 'standings'],
           clubCode: clubCode
         }),
       })
@@ -77,7 +77,7 @@ function InstellingenPageContent() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            tags: ['pools', 'program'],
+            tags: ['pools', 'wedstrijden', 'resultaten'],
             clubCode: oldClubCode
           }),
         })

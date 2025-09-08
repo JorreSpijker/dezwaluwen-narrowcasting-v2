@@ -21,7 +21,8 @@ export async function POST(request: NextRequest) {
     // If clubCode is provided, also revalidate club-specific tags
     if (clubCode) {
       revalidateTag(`pools-${clubCode}`)
-      revalidateTag(`program-${clubCode}`)
+      revalidateTag(`wedstrijden-${clubCode}`)
+      revalidateTag(`resultaten-${clubCode}`)
     }
 
     return NextResponse.json({ 

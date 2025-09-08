@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { fetchWedstrijden, ProgramResponse, type Match } from '@/lib/korfbal-api'
+import { fetchWedstrijden, fetchResultaten, ProgramResponse, type Match } from '@/lib/korfbal-api'
 import { useSettings } from '@/hooks/useSettings'
 import { useTheme } from '@/hooks/useTheme'
 import Programma from '@/components/Programma'
@@ -9,6 +9,7 @@ import Resultaten from '@/components/Resultaten'
 
 export default function WedstrijdenPage() {
   const [wedstrijdenData, setWedstrijdenData] = useState<ProgramResponse[]>([])
+  const [resultatenData, setResultatenData] = useState<ProgramResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
@@ -16,27 +17,30 @@ export default function WedstrijdenPage() {
   const { themeColor } = useTheme() // Use cached theme color for instant updates
 
   useEffect(() => {
-    const loadWedstrijden = async () => {
+    const loadData = async () => {
       if (settingsLoading || !clubCode) return
       
       try {
         setLoading(true)
         setError(null)
-        const data = await fetchWedstrijden(
-          clubCode,
-          '2025-08-27',
-          '2026-09-10'
-        )
-        setWedstrijdenData(data)
+        
+        // Load both programma and resultaten in parallel
+        const [wedstrijdenResponse, resultatenResponse] = await Promise.all([
+          fetchWedstrijden(clubCode, '2025-08-27', '2026-09-10'),
+          fetchResultaten(clubCode) // Uses default date range (last 7 days)
+        ])
+        
+        setWedstrijdenData(wedstrijdenResponse)
+        setResultatenData(resultatenResponse)
       } catch (err) {
         setError('Fout bij het ophalen van wedstrijd gegevens')
-        console.error('Error loading wedstrijden:', err)
+        console.error('Error loading data:', err)
       } finally {
         setLoading(false)
       }
     }
 
-    loadWedstrijden()
+    loadData()
   }, [clubCode, settingsLoading])
 
   const formatDate = (dateString: string) => {
@@ -138,14 +142,15 @@ export default function WedstrijdenPage() {
   }
 
   // Get all matches from all weeks
-  const allMatches = wedstrijdenData.flatMap(week => week.matches)
+  const allWedstrijden = wedstrijdenData.flatMap(week => week.matches)
+  const allResultaten = resultatenData.flatMap(week => week.matches)
   
-  // Split matches into future and past
-  const { futureMatches, pastMatches } = splitMatchesByDate(allMatches)
+  // Split wedstrijden into future and past (for programma)
+  const { futureMatches } = splitMatchesByDate(allWedstrijden)
 
   return (
     <div className="space-y-6">
-      {allMatches.length === 0 ? (
+      {(allWedstrijden.length === 0 && allResultaten.length === 0) ? (
         <div className="teamnl-card text-center py-16">
           <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -156,10 +161,10 @@ export default function WedstrijdenPage() {
       ) : (
         <>
           {/* Programma Component - Toekomstige wedstrijden */}
-          <Programma matches={futureMatches} />
+          {futureMatches.length > 0 && <Programma matches={futureMatches} />}
           
-          {/* Resultaten Component - Gespeelde wedstrijden */}
-          <Resultaten matches={pastMatches} />
+          {/* Resultaten Component - Recente resultaten (afgelopen 7 dagen) */}
+          {allResultaten.length > 0 && <Resultaten matches={allResultaten} />}
         </>
       )}
     </div>

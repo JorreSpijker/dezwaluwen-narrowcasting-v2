@@ -100,6 +100,18 @@ export interface Match {
     firstname: string
     roleDescription: string
   }>
+  stats?: {
+    home: {
+      score: number
+      extensionScore: number | null
+      penaltyScore: number | null
+    }
+    away: {
+      score: number
+      extensionScore: number | null
+      penaltyScore: number | null
+    }
+  }
 }
 
 export interface ProgramResponse {
@@ -165,6 +177,32 @@ export async function fetchStanding(poolId: number): Promise<PoolStanding[]> {
     return await response.json()
   } catch (error) {
     console.error('Error fetching standing:', error)
+    return []
+  }
+}
+
+export async function fetchResultaten(
+  clubCode: string, 
+  dateFrom?: string, 
+  dateTo?: string
+): Promise<ProgramResponse[]> {
+  try {
+    const params = new URLSearchParams()
+    if (dateFrom) params.append('dateFrom', dateFrom)
+    if (dateTo) params.append('dateTo', dateTo)
+    
+    const url = `/api/resultaten/${clubCode}?${params.toString()}`
+    
+    // The API route handles caching with proper headers
+    const response = await fetch(url)
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch resultaten: ${response.statusText}`)
+    }
+    
+    return await response.json()
+  } catch (error) {
+    console.error('Error fetching resultaten:', error)
     return []
   }
 }
